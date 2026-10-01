@@ -4,3 +4,5 @@ outputs/
 logs/
 __pycache__/
 .env
+data/sample/pysteps-data/
+data/sample/pysteps-data-master.zip
