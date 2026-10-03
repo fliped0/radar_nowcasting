@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import csv
 import numpy as np
 from pysteps import io, rcparams
 from pysteps.utils import conversion
@@ -105,6 +105,22 @@ for i in range(n_leadtimes):
 print("\n各预报时效的 RMSE：")
 for i, rmse in enumerate(rmse_list, start=1):
     print(f"+{i*5:02d} min: {rmse:.4f}")
+
+metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir.mkdir(parents=True, exist_ok=True)
+
+csv_path = metrics_dir / "persistence_rmse.csv"
+
+with open(csv_path, "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+
+    writer.writerow(["lead_time_min", "rmse"])
+
+    for i, rmse in enumerate(rmse_list, start=1):
+        writer.writerow([i * 5, rmse])
+
+print("\nRMSE 已保存：")
+print(csv_path)
 
 lead_minutes = np.arange(5, 65, 5)
 

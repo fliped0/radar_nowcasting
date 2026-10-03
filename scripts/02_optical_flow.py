@@ -2,7 +2,7 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
+import csv
 from pysteps import io, rcparams, motion, nowcasts
 from pysteps.utils import conversion , transformation
 
@@ -190,6 +190,8 @@ print("\n各预报时效的 RMSE（dB尺度）：")
 for i, rmse in enumerate(rmse_list, start=1):
     print(f"+{i*5:02d} min: {rmse:.4f}")
 
+
+
 R_f_rain, _ = transformation.dB_transform(
     R_f,
     metadata,
@@ -214,3 +216,19 @@ for i in range(n_leadtimes):
 print("\nOptical Flow RMSE（mm/h）：")
 for i, rmse in enumerate(rmse_rain_list, start=1):
     print(f"+{i*5:02d} min: {rmse:.4f}")
+
+metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir.mkdir(parents=True, exist_ok=True)
+
+csv_path = metrics_dir / "optical_flow_rmse.csv"
+
+with open(csv_path, "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+
+    writer.writerow(["lead_time_min", "rmse"])
+
+    for i, rmse in enumerate(rmse_rain_list, start=1):
+        writer.writerow([i * 5, rmse])
+
+print("\nRMSE 已保存：")
+print(csv_path)

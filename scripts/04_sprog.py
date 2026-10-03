@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-
+import csv
 from pysteps import io, rcparams, motion, nowcasts
 from pysteps.utils import conversion, transformation
 
@@ -117,3 +117,92 @@ R_sprog = sprog_method(
 )
 
 print("\nS-PROG 预报 shape:", R_sprog.shape)
+
+import matplotlib.pyplot as plt
+import os
+
+# 读取真实未来观测（16:00 到 17:00）
+fns_future = io.archive.find_by_date(
+    date,
+    root_path,
+    path_fmt,
+    fn_pattern,
+    fn_ext,
+    timestep,
+    num_prev_files=0,
+    num_next_files=n_leadtimes,
+)
+
+R_future, _, future_metadata = io.read_timeseries(
+    fns_future,
+    importer,
+    **importer_kwargs
+)
+
+R_future, future_metadata = conversion.to_rainrate(R_future, future_metadata)
+R_future_rain = R_future.copy()
+
+# 把 S-PROG 结果从 dB 转回 rain rate
+R_sprog_rain, _ = transformation.dB_transform(
+    R_sprog,
+    metadata,
+    inverse=True
+)
+
+os.makedirs("outputs/sprog", exist_ok=True)
+
+lead_idx = 11
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.imshow(R_sprog_rain[lead_idx])
+plt.title("S-PROG +60 min")
+plt.axis("off")
+
+plt.subplot(1, 2, 2)
+plt.imshow(R_future_rain[lead_idx + 1])
+plt.title("Observation +60 min")
+plt.axis("off")
+
+plt.tight_layout()
+plt.savefig("outputs/sprog/sprog_vs_obs_60min.png", dpi=150)
+plt.close()
+
+print("\n+60 min 对比图已保存：")
+print("outputs/sprog/sprog_vs_obs_60min.png")
+
+rmse_sprog = []
+
+for i in range(n_leadtimes):
+    pred = R_sprog_rain[i]
+    obs = R_future_rain[i + 1]
+
+    mask = np.isfinite(pred) & np.isfinite(obs)
+
+    rmse = np.sqrt(
+        np.mean((pred[mask] - obs[mask]) ** 2)
+    )
+
+    rmse_sprog.append(rmse)
+
+print("\nS-PROG RMSE（mm/h）：")
+
+for i, rmse in enumerate(rmse_sprog, start=1):
+    print(f"+{i*5:02d} min: {rmse:.4f}")
+
+metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir.mkdir(parents=True, exist_ok=True)
+
+csv_path = metrics_dir / "sprog_rmse.csv"
+
+with open(csv_path, "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+
+    writer.writerow(["lead_time_min", "rmse"])
+
+    for i, rmse in enumerate(rmse_sprog, start=1):
+        writer.writerow([i * 5, rmse])
+
+print("\nRMSE 已保存：")
+print(csv_path)

@@ -1,73 +1,70 @@
-import numpy as np
+import csv
+from pathlib import Path
+
 import matplotlib.pyplot as plt
-import os
 
 
-lead_minutes = np.arange(5, 65, 5)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+METRICS_DIR = PROJECT_ROOT / "outputs" / "metrics"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "evaluation"
 
-persistence_rmse = [
-    0.5476,
-    0.6250,
-    0.6587,
-    0.6956,
-    0.7175,
-    0.7321,
-    0.7536,
-    0.7552,
-    0.7645,
-    0.7752,
-    0.7829,
-    0.8000,
-]
-
-optical_flow_rmse = [
-    0.3449,
-    0.4189,
-    0.4773,
-    0.5202,
-    0.5604,
-    0.5778,
-    0.6009,
-    0.6175,
-    0.6361,
-    0.6510,
-    0.6548,
-    0.6765,
-]
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-os.makedirs("outputs/evaluation", exist_ok=True)
+def load_rmse(filename):
+    lead_times = []
+    rmse_values = []
+
+    with open(METRICS_DIR / filename, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            lead_times.append(int(row["lead_time_min"]))
+            rmse_values.append(float(row["rmse"]))
+
+    return lead_times, rmse_values
+
+
+persistence_x, persistence_y = load_rmse("persistence_rmse.csv")
+optical_flow_x, optical_flow_y = load_rmse("optical_flow_rmse.csv")
+sprog_x, sprog_y = load_rmse("sprog_rmse.csv")
+
 
 plt.figure(figsize=(8, 5))
 
 plt.plot(
-    lead_minutes,
-    persistence_rmse,
+    persistence_x,
+    persistence_y,
     marker="o",
-    label="Persistence"
+    label="Persistence",
 )
 
 plt.plot(
-    lead_minutes,
-    optical_flow_rmse,
+    optical_flow_x,
+    optical_flow_y,
     marker="o",
-    label="Optical Flow"
+    label="Optical Flow",
+)
+
+plt.plot(
+    sprog_x,
+    sprog_y,
+    marker="o",
+    label="S-PROG",
 )
 
 plt.xlabel("Lead Time (min)")
 plt.ylabel("RMSE (mm/h)")
-plt.title("Persistence vs Optical Flow")
+plt.title("Nowcasting Method Comparison")
 plt.grid(True)
 plt.legend()
 
 plt.tight_layout()
 
-plt.savefig(
-    "outputs/evaluation/persistence_vs_optical_flow_rmse.png",
-    dpi=150
-)
+output_path = OUTPUT_DIR / "rmse_method_comparison.png"
 
+plt.savefig(output_path, dpi=150)
 plt.close()
 
 print("对比曲线已保存：")
-print("outputs/evaluation/persistence_vs_optical_flow_rmse.png")
+print(output_path)
