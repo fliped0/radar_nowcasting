@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 import csv
 from datetime import datetime
 from pathlib import Path
@@ -16,21 +20,18 @@ from pysteps.utils import conversion, transformation
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 STEPS_PATH = (
-    PROJECT_ROOT
-    / "outputs"
+    CONTEXT.output_root
     / "steps"
     / "steps_forecast.npy"
 )
 
 METRICS_DIR = (
-    PROJECT_ROOT
-    / "outputs"
+    CONTEXT.output_root
     / "metrics"
 )
 
 OUTPUT_DIR = (
-    PROJECT_ROOT
-    / "outputs"
+    CONTEXT.output_root
     / "evaluation"
 )
 
@@ -77,22 +78,11 @@ print("STEPS rain rate shape:", R_steps_rain.shape)
 # 4. 读取真实未来观测
 # ============================================================
 
-date = datetime.strptime(
-    "201609281600",
-    "%Y%m%d%H%M",
-)
+date = CONTEXT.date
 
 data_source = rcparams.data_sources["fmi"]
 
-root_path = str(
-    PROJECT_ROOT
-    / "data"
-    / "sample"
-    / "pysteps-data"
-    / "radar"
-    / "fmi"
-    / "pgm"
-)
+root_path = str(CONTEXT.data_root)
 
 fns_future = io.archive.find_by_date(
     date,

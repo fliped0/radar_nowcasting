@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 from datetime import datetime
 import csv
 import numpy as np
@@ -6,16 +10,14 @@ from pysteps.utils import conversion
 from pathlib import Path
 
 
-date = datetime.strptime("201609281600", "%Y%m%d%H%M")
+date = CONTEXT.date
 n_leadtimes = 12
 
 data_source = rcparams.data_sources["fmi"]
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-root_path = str(
-    PROJECT_ROOT / "data" / "sample" / "pysteps-data" / "radar" / "fmi" / "pgm"
-)
+root_path = str(CONTEXT.data_root)
 path_fmt = data_source["path_fmt"]
 fn_pattern = data_source["fn_pattern"]
 fn_ext = data_source["fn_ext"]
@@ -54,7 +56,7 @@ R_persistence = np.repeat(
     axis=0
 )
 
-forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir = CONTEXT.output_root / "forecasts"
 forecast_dir.mkdir(parents=True, exist_ok=True)
 
 np.save(
@@ -77,7 +79,7 @@ for timestamp in metadata["timestamps"][1:]:
 import os
 import matplotlib.pyplot as plt
 
-os.makedirs("outputs/persistence", exist_ok=True)
+os.makedirs(CONTEXT.legacy_path("outputs/persistence"), exist_ok=True)
 
 lead_idx = 11
 
@@ -94,14 +96,14 @@ axes[1].axis("off")
 plt.tight_layout()
 
 plt.savefig(
-    "outputs/persistence/persistence_vs_obs_60min.png",
+    CONTEXT.legacy_path("outputs/persistence/persistence_vs_obs_60min.png"),
     dpi=150
 )
 
 plt.close()
 
 print("\n对比图已保存：")
-print("outputs/persistence/persistence_vs_obs_60min.png")
+print(CONTEXT.legacy_path("outputs/persistence/persistence_vs_obs_60min.png"))
 
 rmse_list = []
 
@@ -117,7 +119,7 @@ print("\n各预报时效的 RMSE：")
 for i, rmse in enumerate(rmse_list, start=1):
     print(f"+{i*5:02d} min: {rmse:.4f}")
 
-metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir = CONTEXT.output_root / "metrics"
 metrics_dir.mkdir(parents=True, exist_ok=True)
 
 csv_path = metrics_dir / "persistence_rmse.csv"
@@ -145,10 +147,10 @@ plt.grid(True)
 
 plt.tight_layout()
 plt.savefig(
-    "outputs/persistence/persistence_rmse.png",
+    CONTEXT.legacy_path("outputs/persistence/persistence_rmse.png"),
     dpi=150
 )
 plt.close()
 
 print("\nRMSE 曲线已保存：")
-print("outputs/persistence/persistence_rmse.png")
+print(CONTEXT.legacy_path("outputs/persistence/persistence_rmse.png"))

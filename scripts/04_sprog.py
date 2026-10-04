@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 from datetime import datetime
 from pathlib import Path
 import csv
@@ -12,19 +16,11 @@ from pysteps.cascade.decomposition import decomposition_fft
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-date = datetime.strptime("201609281600", "%Y%m%d%H%M")
+date = CONTEXT.date
 
 data_source = rcparams.data_sources["fmi"]
 
-root_path = str(
-    PROJECT_ROOT
-    / "data"
-    / "sample"
-    / "pysteps-data"
-    / "radar"
-    / "fmi"
-    / "pgm"
-)
+root_path = str(CONTEXT.data_root)
 
 path_fmt = data_source["path_fmt"]
 fn_pattern = data_source["fn_pattern"]
@@ -149,7 +145,7 @@ R_sprog_rain, _ = transformation.dB_transform(
     inverse=True
 )
 
-forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir = CONTEXT.output_root / "forecasts"
 forecast_dir.mkdir(parents=True, exist_ok=True)
 
 np.save(
@@ -160,7 +156,7 @@ np.save(
 print("\nS-PROG 预测场已保存：")
 print(forecast_dir / "sprog.npy")
 
-os.makedirs("outputs/sprog", exist_ok=True)
+os.makedirs(CONTEXT.legacy_path("outputs/sprog"), exist_ok=True)
 
 lead_idx = 11
 
@@ -177,11 +173,11 @@ plt.title("Observation +60 min")
 plt.axis("off")
 
 plt.tight_layout()
-plt.savefig("outputs/sprog/sprog_vs_obs_60min.png", dpi=150)
+plt.savefig(CONTEXT.legacy_path("outputs/sprog/sprog_vs_obs_60min.png"), dpi=150)
 plt.close()
 
 print("\n+60 min 对比图已保存：")
-print("outputs/sprog/sprog_vs_obs_60min.png")
+print(CONTEXT.legacy_path("outputs/sprog/sprog_vs_obs_60min.png"))
 
 rmse_sprog = []
 
@@ -202,7 +198,7 @@ print("\nS-PROG RMSE（mm/h）：")
 for i, rmse in enumerate(rmse_sprog, start=1):
     print(f"+{i*5:02d} min: {rmse:.4f}")
 
-metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir = CONTEXT.output_root / "metrics"
 metrics_dir.mkdir(parents=True, exist_ok=True)
 
 csv_path = metrics_dir / "sprog_rmse.csv"

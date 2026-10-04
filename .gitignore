@@ -6,3 +6,4 @@ __pycache__/
 .env
 data/sample/pysteps-data/
 data/sample/pysteps-data-master.zip
+/configs/pystepsrc

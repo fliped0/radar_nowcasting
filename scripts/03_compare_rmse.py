@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 import csv
 from pathlib import Path
 
@@ -5,8 +9,8 @@ import matplotlib.pyplot as plt
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-METRICS_DIR = PROJECT_ROOT / "outputs" / "metrics"
-OUTPUT_DIR = PROJECT_ROOT / "outputs" / "evaluation"
+METRICS_DIR = CONTEXT.output_root / "metrics"
+OUTPUT_DIR = CONTEXT.output_root / "evaluation"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 

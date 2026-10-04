@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 import csv
 from pathlib import Path
 
@@ -11,15 +15,13 @@ import matplotlib.pyplot as plt
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 CSV_PATH = (
-    PROJECT_ROOT
-    / "outputs"
+    CONTEXT.output_root
     / "metrics"
     / "unified_metrics_all_thresholds.csv"
 )
 
 OUTPUT_DIR = (
-    PROJECT_ROOT
-    / "outputs"
+    CONTEXT.output_root
     / "evaluation"
 )
 

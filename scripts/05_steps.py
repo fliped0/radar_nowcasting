@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 from datetime import datetime
 from pathlib import Path
 import numpy as np
@@ -7,19 +11,11 @@ from pysteps.utils import conversion, transformation
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-date = datetime.strptime("201609281600", "%Y%m%d%H%M")
+date = CONTEXT.date
 
 data_source = rcparams.data_sources["fmi"]
 
-root_path = str(
-    PROJECT_ROOT
-    / "data"
-    / "sample"
-    / "pysteps-data"
-    / "radar"
-    / "fmi"
-    / "pgm"
-)
+root_path = str(CONTEXT.data_root)
 
 path_fmt = data_source["path_fmt"]
 fn_pattern = data_source["fn_pattern"]
@@ -93,7 +89,7 @@ R_steps = steps_method(
 
 print("\nSTEPS 预报 shape:", R_steps.shape)
 
-output_dir = PROJECT_ROOT / "outputs" / "steps"
+output_dir = CONTEXT.output_root / "steps"
 output_dir.mkdir(parents=True, exist_ok=True)
 
 np.save(output_dir / "steps_forecast.npy", R_steps)

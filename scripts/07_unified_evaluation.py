@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 from pathlib import Path
 import csv
 import numpy as np
@@ -8,7 +12,7 @@ from pysteps.utils import conversion
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-FORECAST_DIR = PROJECT_ROOT / "outputs" / "forecasts"
+FORECAST_DIR = CONTEXT.output_root / "forecasts"
 
 
 persistence = np.load(
@@ -33,19 +37,11 @@ print("Optical Flow shape:", optical_flow.shape)
 print("S-PROG shape:", sprog.shape)
 print("STEPS Mean shape:", steps_mean.shape)
 
-date = datetime.strptime("201609281600", "%Y%m%d%H%M")
+date = CONTEXT.date
 
 data_source = rcparams.data_sources["fmi"]
 
-root_path = str(
-    PROJECT_ROOT
-    / "data"
-    / "sample"
-    / "pysteps-data"
-    / "radar"
-    / "fmi"
-    / "pgm"
-)
+root_path = str(CONTEXT.data_root)
 
 fns_future = io.archive.find_by_date(
     date,
@@ -177,7 +173,7 @@ for method_name, forecast in methods.items():
             f"POD={pod:.4f}, FAR={far:.4f}"
         )
 
-metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir = CONTEXT.output_root / "metrics"
 metrics_dir.mkdir(parents=True, exist_ok=True)
 
 csv_path = metrics_dir / "unified_metrics_threshold_1.0.csv"

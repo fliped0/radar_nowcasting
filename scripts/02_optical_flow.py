@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,16 +14,14 @@ from pathlib import Path
 
 
 # 起报时间
-date = datetime.strptime("201609281600", "%Y%m%d%H%M")
+date = CONTEXT.date
 
 # FMI 数据配置
 data_source = rcparams.data_sources["fmi"]
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-root_path = str(
-    PROJECT_ROOT / "data" / "sample" / "pysteps-data" / "radar" / "fmi" / "pgm"
-)
+root_path = str(CONTEXT.data_root)
 path_fmt = data_source["path_fmt"]
 fn_pattern = data_source["fn_pattern"]
 fn_ext = data_source["fn_ext"]
@@ -82,7 +84,7 @@ print("x方向最大速度:", np.nanmax(V[0]))
 print("y方向最小速度:", np.nanmin(V[1]))
 print("y方向最大速度:", np.nanmax(V[1]))
 
-os.makedirs("outputs/optical_flow", exist_ok=True)
+os.makedirs(CONTEXT.legacy_path("outputs/optical_flow"), exist_ok=True)
 
 plt.figure(figsize=(8, 10))
 
@@ -108,14 +110,14 @@ plt.axis("off")
 plt.tight_layout()
 
 plt.savefig(
-    "outputs/optical_flow/motion_field.png",
+    CONTEXT.legacy_path("outputs/optical_flow/motion_field.png"),
     dpi=150
 )
 
 plt.close()
 
 print("\n运动场图片已保存：")
-print("outputs/optical_flow/motion_field.png")
+print(CONTEXT.legacy_path("outputs/optical_flow/motion_field.png"))
 
 n_leadtimes = 12
 
@@ -170,11 +172,11 @@ plt.title("Observation +60 min")
 plt.axis("off")
 
 plt.tight_layout()
-plt.savefig("outputs/optical_flow/oflow_vs_obs_60min.png", dpi=150)
+plt.savefig(CONTEXT.legacy_path("outputs/optical_flow/oflow_vs_obs_60min.png"), dpi=150)
 plt.close()
 
 print("\n+60 min 对比图已保存：")
-print("outputs/optical_flow/oflow_vs_obs_60min.png")
+print(CONTEXT.legacy_path("outputs/optical_flow/oflow_vs_obs_60min.png"))
 
 rmse_list = []
 
@@ -198,7 +200,7 @@ R_f_rain, _ = transformation.dB_transform(
     inverse=True
 )
 
-forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir = CONTEXT.output_root / "forecasts"
 forecast_dir.mkdir(parents=True, exist_ok=True)
 
 np.save(
@@ -228,7 +230,7 @@ print("\nOptical Flow RMSE（mm/h）：")
 for i, rmse in enumerate(rmse_rain_list, start=1):
     print(f"+{i*5:02d} min: {rmse:.4f}")
 
-metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir = CONTEXT.output_root / "metrics"
 metrics_dir.mkdir(parents=True, exist_ok=True)
 
 csv_path = metrics_dir / "optical_flow_rmse.csv"

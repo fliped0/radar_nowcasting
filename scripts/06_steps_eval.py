@@ -1,3 +1,7 @@
+from experiment_context import get_context
+
+CONTEXT = get_context()
+
 from pathlib import Path
 
 import numpy as np
@@ -12,8 +16,7 @@ import matplotlib.pyplot as plt
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 forecast_path = (
-    PROJECT_ROOT
-    / "outputs"
+    CONTEXT.output_root
     / "steps"
     / "steps_forecast.npy"
 )
@@ -47,7 +50,7 @@ R_steps_mean = np.nanmean(
 print("\n转换后全部成员 shape:", R_steps_rain.shape)
 print("Ensemble Mean shape:", R_steps_mean.shape)
 
-forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir = CONTEXT.output_root / "forecasts"
 forecast_dir.mkdir(parents=True, exist_ok=True)
 
 np.save(
@@ -58,19 +61,11 @@ np.save(
 print("\nSTEPS Ensemble Mean 预测场已保存：")
 print(forecast_dir / "steps_mean.npy")
 
-date = datetime.strptime("201609281600", "%Y%m%d%H%M")
+date = CONTEXT.date
 
 data_source = rcparams.data_sources["fmi"]
 
-root_path = str(
-    PROJECT_ROOT
-    / "data"
-    / "sample"
-    / "pysteps-data"
-    / "radar"
-    / "fmi"
-    / "pgm"
-)
+root_path = str(CONTEXT.data_root)
 
 fns_future = io.archive.find_by_date(
     date,
@@ -121,7 +116,7 @@ for i, rmse in enumerate(rmse_steps, start=1):
     print(f"+{i*5:02d} min: {rmse:.4f}")
 
 
-metrics_dir = PROJECT_ROOT / "outputs" / "metrics"
+metrics_dir = CONTEXT.output_root / "metrics"
 metrics_dir.mkdir(parents=True, exist_ok=True)
 
 csv_path = metrics_dir / "steps_rmse.csv"
@@ -138,7 +133,7 @@ with open(csv_path, "w", newline="", encoding="utf-8") as f:
 print("\nRMSE 已保存：")
 print(csv_path)
 
-output_dir = PROJECT_ROOT / "outputs" / "steps"
+output_dir = CONTEXT.output_root / "steps"
 output_dir.mkdir(parents=True, exist_ok=True)
 
 lead_idx = 11  # +60 min
