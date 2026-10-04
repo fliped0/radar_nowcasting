@@ -149,6 +149,17 @@ R_sprog_rain, _ = transformation.dB_transform(
     inverse=True
 )
 
+forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir.mkdir(parents=True, exist_ok=True)
+
+np.save(
+    forecast_dir / "sprog.npy",
+    R_sprog_rain
+)
+
+print("\nS-PROG 预测场已保存：")
+print(forecast_dir / "sprog.npy")
+
 os.makedirs("outputs/sprog", exist_ok=True)
 
 lead_idx = 11

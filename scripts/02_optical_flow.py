@@ -198,6 +198,17 @@ R_f_rain, _ = transformation.dB_transform(
     inverse=True
 )
 
+forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir.mkdir(parents=True, exist_ok=True)
+
+np.save(
+    forecast_dir / "optical_flow.npy",
+    R_f_rain
+)
+
+print("\nOptical Flow 预测场已保存：")
+print(forecast_dir / "optical_flow.npy")
+
 print("\n外推结果转回 rain rate 后：")
 print("shape:", R_f_rain.shape)
 print("min:", np.nanmin(R_f_rain))

@@ -47,6 +47,17 @@ R_steps_mean = np.nanmean(
 print("\n转换后全部成员 shape:", R_steps_rain.shape)
 print("Ensemble Mean shape:", R_steps_mean.shape)
 
+forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir.mkdir(parents=True, exist_ok=True)
+
+np.save(
+    forecast_dir / "steps_mean.npy",
+    R_steps_mean
+)
+
+print("\nSTEPS Ensemble Mean 预测场已保存：")
+print(forecast_dir / "steps_mean.npy")
+
 date = datetime.strptime("201609281600", "%Y%m%d%H%M")
 
 data_source = rcparams.data_sources["fmi"]

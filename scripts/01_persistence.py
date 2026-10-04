@@ -54,6 +54,17 @@ R_persistence = np.repeat(
     axis=0
 )
 
+forecast_dir = PROJECT_ROOT / "outputs" / "forecasts"
+forecast_dir.mkdir(parents=True, exist_ok=True)
+
+np.save(
+    forecast_dir / "persistence.npy",
+    R_persistence
+)
+
+print("\nPersistence 预测场已保存：")
+print(forecast_dir / "persistence.npy")
+
 print("timestep:", timestep, "min")
 print("观测数据 shape:", R_obs.shape)
 print("Persistence shape:", R_persistence.shape)
