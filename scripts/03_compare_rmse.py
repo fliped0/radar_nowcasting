@@ -28,6 +28,7 @@ def load_rmse(filename):
 persistence_x, persistence_y = load_rmse("persistence_rmse.csv")
 optical_flow_x, optical_flow_y = load_rmse("optical_flow_rmse.csv")
 sprog_x, sprog_y = load_rmse("sprog_rmse.csv")
+steps_x, steps_y = load_rmse("steps_rmse.csv")
 
 
 plt.figure(figsize=(8, 5))
@@ -51,6 +52,13 @@ plt.plot(
     sprog_y,
     marker="o",
     label="S-PROG",
+)
+
+plt.plot(
+    steps_x,
+    steps_y,
+    marker="o",
+    label="STEPS Ensemble Mean",
 )
 
 plt.xlabel("Lead Time (min)")
