@@ -7,3 +7,4 @@ __pycache__/
 data/sample/pysteps-data/
 data/sample/pysteps-data-master.zip
 /configs/pystepsrc
+/data/sample/pysteps-data.tar.gz

@@ -16,7 +16,8 @@ python scripts/run_cases.py --cases configs/cases.json --dry-run
 ```
 
 时间必须是 UTC `YYYYMMDDHHMM`，且位于 5 分钟边界；案例编号自动生成。
-`configs/cases.json` 只有 `start_times` 字符串列表，初始仅包含原参考案例。
+`configs/cases.json` 只有 `start_times` 字符串列表，当前包含两个正式验证案例：
+`201609281600` 和 `201705091300`。
 以后移除批量命令的 `--dry-run` 才会真正运行该清单；本次未执行真实多案例实验。
 入口使用当前 Python 解释器启动子进程，工作目录固定为项目根目录，串行运行。
 
@@ -87,3 +88,45 @@ python -m compileall -q scripts tests
 5 个预测数组逐元素一致（含 NaN），10 份 CSV 字节一致，23 张 PNG 像素一致；
 旧 outputs 的全部文件校验值未变化。新案例约占 1.2 GB，14 项任务均成功。
 批量入口仅预检了单条参考清单，未运行真实多案例。
+
+## 跨案例 CSV 汇总
+
+`scripts/16_steps_bss.py` 用于单案例计算 BSS relative to Persistence，读取已有
+STEPS ensemble、Persistence 预测及未来观测，输出
+`metrics/steps_brier_skill_score.csv`；不会重新运行预测方法。它是独立脚本，
+不属于当前 `run_case.py --tasks` 的任务编号范围。使用方法：
+
+```bash
+python scripts/16_steps_bss.py --start-time 201609281600
+```
+
+`scripts/17_case_summary.py` 用于跨案例汇总，读取已有指标 CSV，不重算预测或评价指标。
+
+激活 `radar-nowcasting` 后，在项目根目录运行：
+
+```bash
+python scripts/17_case_summary.py --start-times 201609281600 201705091300
+python scripts/17_case_summary.py --cases configs/cases.json
+```
+
+不传参数时默认读取项目内 `configs/cases.json`；命令行时间列表优先由
+`--start-times` 明确指定，不能与 `--cases` 同时使用。当前 `configs/cases.json`
+包含 `201609281600` 和 `201705091300` 两个正式验证案例，因此默认运行会汇总这两个案例。
+
+脚本只读取各案例 metrics 中四方法 RMSE、unified_metrics_all_thresholds、
+steps_brier_skill_score 和 steps_crps 的现有 CSV。不会重新计算预测、Brier Score
+或指标；BSS 汇总的是各案例已经计算的相对 Persistence 的 BSS，而非重新合并 BS 后计算比值。
+所有数据验证通过后写入 `outputs/summary/` 的四个文件（同名汇总文件会被覆盖）：
+
+- `rmse_summary.csv`：method、lead_time_min、mean、std、case_count。
+- `categorical_summary.csv`：另含 threshold 和 metric（csi/pod/far）。
+- `bss_summary.csv`：method=STEPS，reference_method=Persistence，另含 threshold。
+- `crps_summary.csv`：method=STEPS，lead_time_min、mean、std、case_count。
+
+各案例等权，std 为样本标准差（ddof=1）。三个阈值 0.1、1.0、5.0 mm/h 分别统计。
+case_count 为该分组中有限数值的案例数；源 CSV 的 NaN 会明确警告，均值仅使用有限值。
+没有有效案例时 mean/std 为 NaN，只有一个有效案例时 std 为 NaN。
+缺文件、空列表、重复案例、错误字段、重复行、缺少阈值或案例间指标行不一致均报错并返回非零状态，
+不静默跳过、不补跑任务；输入验证失败时不写入或覆盖 summary 文件。
+
+基础测试：`python -m unittest discover -s tests -p test_case_summary.py -v`。
