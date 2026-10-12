@@ -2,6 +2,19 @@
 
 Long-term research workspace for radar-based precipitation nowcasting.
 
+## Current progress (2026-10-12)
+
+Four baselines (Persistence, Optical Flow, S-PROG and STEPS), deterministic
+verification and STEPS probabilistic verification are implemented. Both FMI cases
+(`201609281600` and `201705091300`, UTC) completed all 14 workflow tasks on
+2026-10-05 according to local run manifests. Per-case BSS relative to Persistence
+and cross-case RMSE, categorical, BSS and CRPS summaries are also available locally.
+Data and generated outputs are excluded from Git.
+
+The project is at the two-case validation stage. Broader independent weather-case
+evaluation and cross-case interpretation remain to be done; two cases do not
+establish general performance. See [the progress record](docs/progress.md).
+
 ## Layout
 
 - data/: sample, raw, and processed datasets
